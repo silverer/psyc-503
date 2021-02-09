@@ -1,0 +1,113 @@
+---
+title: "Homework 2"
+author: "Elisabeth R Silver"
+date: "2/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+```{r libs}
+library(pacman)
+p_load(ggplot2, stats, psych, dplyr, jtools, scales,ggExtra,Hmisc)
+#aplpack has some conflicts with Big Sur it seems
+#but this link has code to use ggplot instead: https://gist.github.com/benmarwick/00772ccea2dd0b0f1745
+# load the functions from this Gist:
+devtools::source_gist("00772ccea2dd0b0f1745", filename = "000_geom_bag.r")
+devtools::source_gist("00772ccea2dd0b0f1745", filename = "001_bag_functions.r")
+```
+
+# Professor salaries
+
+```{r read_data}
+df <- carData::Salaries
+```
+
+This dataset contains data for professor salaries (_N_ = `r nrow(df)`) at one instutition for the 2008-2009 school year. I will be focusing on the variables `yrs.since.phd` and `salary`.
+
+## Descriptive statistics
+
+The mean (standard deviation) years since PhD conferral is `r round(mean(df$yrs.since.phd), 2)` (`r round(sd(df$yrs.since.phd), 2)`). The mean (standard deviation) salary is `r dollar(mean(df$salary))` (`r dollar(sd(df$salary))`). Both variables are positively skewed.
+
+
+
+```{r hist_plots}
+
+hist(df$yrs.since.phd, main = "Histogram: Years Since PhD Conferral",
+     xlab = "Years")
+
+hist(df$salary, main = 'Histogram: Annual Salary',
+     xlab = 'Salary (2009 USD)')
+```
+
+
+### Outliers
+
+None of the years since PhD conferral are technically outliers, but there seems to be a positive skew.
+
+There do, however, appear to be a few particularly well-paid professors, with three outliers.
+
+
+```{r box_plots}
+
+boxplot(df$yrs.since.phd, main = "Years Since PhD Conferral", ylab = 'Years')
+
+boxplot(df$salary, main = 'Annual Salary\n', ylab = 'Salary (2009 USD)')
+#from https://statsandr.com/blog/outliers-detection-in-r/
+out <- boxplot.stats(df$salary)$out
+out_ind <- which(df$salary %in% c(out))
+mtext(paste("Outliers: ", paste(out, collapse = ", ")))
+
+```
+
+
+
+## Bivariate exploration
+
+The correlation between salary and years since PhD conferral is `r round(cor(df$yrs.since.phd, df$salary), 2)`. 
+
+It looks like the assumption of linearity is satisfied, but homoscedacity is not.
+
+
+```{r corr_plot}
+p <- ggplot(df, aes(yrs.since.phd, salary)) + 
+  geom_point(alpha = 1/10) + 
+  theme_light() + 
+  stat_smooth(method=lm)+
+  labs(title = "Salary vs. Years Since PhD Conferral", x = "Years", y = "Salary (2009 USD)")
+p
+```
+
+
+All of the points are within the fence, so it doesn't look like there are bivariate outliers.
+
+
+```{r bag_plot_salaries}
+p <- ggplot(df, aes(yrs.since.phd, salary, colour=yrs.since.phd)) +
+        geom_bag() +
+        geom_point(alpha=1/10, show.legend=FALSE) +
+        theme_bw()+
+        ylab("Salary (2009) USD")+
+        xlab("Years since PhD Conferral")
+p
+
+```
+
+
+```{r linear_reg}
+mod <- lm(salary~yrs.since.phd, data = df)
+summary(mod)
+
+```
+
+The adjusted R^2^ suggests that 17.4% of the variance in salary can be accounted for by years since PhD conferral. The estimate for the intercept, 91,718.70, suggests that if the regression line were drawn to cross the y-axis (in other words, someone had 0 years since their PhD was conferred), their salary would be, on average, \$91,718.70 (which seems a bit... optimistic). The slope is 985.30, suggesting that for every year following PhD conferral, one's salary increases by \$985.30 on average. The p-values are < 0.001, suggesting that the probability that these estimates reflect mere chance is very low. 
+
+
+
+
+
+

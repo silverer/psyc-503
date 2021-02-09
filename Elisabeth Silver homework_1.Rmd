@@ -1,0 +1,82 @@
+---
+title: "Homework 1"
+author: "Elisabeth R Silver"
+date: "02/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!require("pacman")) install.packages("pacman"); library(pacman)
+p_load(dplyr,ggplot2,psych,stats,ggpubr)
+
+```
+
+## Chatterjee-Price employee attitude dataset
+
+In this dataset, each row is the proportion of favorable responses from a sample of employees (_n_ = 35) at 30 companies for each column dimension (total _N_ = `r 35*30`). 
+
+```{r load_data}
+data(attitude)
+```
+
+### Satisfaction with raises
+
+The average (standard deviation) percent of employees satisfied with their employer's raises is `r round(mean(attitude$raises), 2)`% (`r round(sd(attitude$raises), 2)`%). 
+
+Visually, satisfaction with raises is roughly normally distributed, and there do not seem to be any outliers or egregious skew. The histogram has a roughly normal distribution, there are not any outlying points on the boxplot, and the points on the QQ plot mostly align with the QQ line, suggesting normality.
+
+
+```{r plots_1}
+#Create the histogram
+hist(attitude$raises, main = 'Histogram of percent of employees satisfied with raises',
+     xlab = "Percent satisfied")
+#Create the boxplot
+ggboxplot(attitude$raises, ylab="Percent satisfied", 
+          xlab = "",
+          title = "Percent of employees satisfied with raises")+ rremove("x.ticks") + rremove("x.text")
+#Create the QQPlot
+qqnorm(attitude$raises, pch = 1, frame = FALSE)
+qqline(attitude$raises, col = "steelblue", lwd = 2)
+
+```
+
+Statistically, the skew and excess kurtosis are not particularly large:
+
+```{r describe_data_1}
+#More descriptives
+psych::describe(attitude$raises)
+```
+
+Given the approximately normal distribution of this variable, I do not think that the distribution would affect subsequent analyses.
+
+### Satisfaction with handling of employee complaints
+
+The average (standard deviation) percent of employees satisfied with their employer's handling of employee complaints is `r round(mean(attitude$complaints), 2)`% (`r round(sd(attitude$complaints), 2)`%). 
+
+Visually, satisfaction with handling of employee compaints is roughly normally distributed, and there do not seem to be any outliers or egregious skew. The histogram has a roughly normal distribution (although there is a slight negative skew), there are not any outlying points on the boxplot, and the points on the QQ plot mostly align with the QQ line:
+
+
+```{r plots_2}
+#Create the histogram
+hist(attitude$complaints, 
+     main = 'Histogram of percent of employees satisfied with\nhandling of complaints',
+     xlab = "Percent satisfied")
+
+#Create the boxplot
+ggboxplot(attitude$complaints, ylab="Percent satisfied", 
+          xlab = " ", title = "Percent of employees satisfied with\nhandling of complaints") + rremove("x.ticks") + rremove("x.text")
+#Create the QQPlot
+qqnorm(attitude$complaints, pch = 1, frame = FALSE)
+qqline(attitude$complaints, col = "steelblue", lwd = 2)
+
+```
+
+Statistically, the skew and excess kurtosis are not particularly large (although the skew is negative, as the above graphs suggest):
+
+```{r describe_data_2}
+#More descriptives
+psych::describe(attitude$complaints)
+```
+
+Given the approximately normal distribution of this variable, I do not think that the distribution would affect subsequent analyses. There aren't any outliers that would require some sort of treatment. 
