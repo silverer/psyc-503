@@ -1,0 +1,92 @@
+---
+title: "Homework 3"
+author: "Elisabeth R Silver"
+date: "2/22/2021"
+output:
+  word_document: default
+  html_document: default
+font-family: Times New Roman
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Multiple Linear Regression with UT Austin Prof. Evaluation Data
+
+```{r load_datapacks}
+library(pacman)
+p_load(dplyr, stats, psych, apaTables, ggplot2, ggpubr, AER, pwr, scales, papaja, knitr)
+data("TeachingRatings")
+
+vars <- c("eval", "beauty", "age")
+var.names <- c("Student Evaluation", "Physical Attractiveness", "Age (years)")
+```
+
+The dataset contains students' course evaluations for `r nrow(TeachingRatings)` courses during the 2000-2002 academic years at UT Austin. It has (among other variables) data on the course instructor's student evaluation, physical attractiveness (z-scored and rated by a panel of six students), and age.
+
+### Variable exploration
+
+Student evaluations are negatively skewed with a few outliers on the lower end. Physical attractiveness is positively skewed with no apparent outliers. Age is more or less normally distributed with no apparent outliers. 
+
+
+```{r univ_plots}
+for(i in 1:length(vars)){
+  hist(TeachingRatings[[vars[i]]], xlab = var.names[i], main = paste0('Histogram of ', var.names[i]))
+  boxplot(TeachingRatings[[vars[i]]], main = var.names[i], ylab = var.names[i])
+}
+```
+
+
+Looking at pair plots, age and beauty seem closer to being multivariate normal than course evaluations and age and course evaluations and beauty. It seems like there are many observations that have the same course evaluations. 
+
+
+```{r pair_plots}
+pairs(TeachingRatings[c(2,5,6)])
+```
+
+
+### Multiple Regression: Course evaluations regressed on instructor age and attractiveness
+
+The model predicts that when an instructor's physical attractiveness increases by one standard deviation (these are z-scored), their course evaluation would increaase by 0.13 on a 1-5 scale, holding age constant. This effect is significant, so the slope more than likely is not equal to 0. 
+
+Holding attractiveness constant, instructor age doesn't have a strong relationship with course evaluations--a one year increase in age has almost zero association with change in evaluationn, controlling for attractiveness, and the p-value suggests as much.
+
+The intercept indicates that when age and physical attractiveness equal 0. Since I don't think a newborn baby would be qualified to teach a course (unless it's in crying), the intercept isn't too informative here.
+
+
+```{r multiple_reg}
+mod <- lm(eval~age+beauty, data = TeachingRatings)
+sum.mod <- summary(mod)
+summary(mod)
+
+```
+
+### Power analysis
+
+```{r pow.analysis}
+#v = sample size - num predictors (u) - 1
+res1 <- pwr.f2.test(u = 2, v = nrow(TeachingRatings)-2-1, power = 0.8)
+min.r2 <- res1$f2/(res1$f2+1)
+res2 <- pwr.f2.test(u = 2, f2 = sum.mod$r.squared/(1-sum.mod$r.squared), power = 0.8)
+min.n <- ceiling(res2$v) + 2 + 1
+```
+
+Given the sample size, the minimum R^2^ possible with 80% power is `r round(min.r2, 2)`. The minimum sample size required to obtain the observed R^2^ (`r round(sum.mod$r.squared, 2)`) is `r round(min.n, 2)`. 
+
+### APA-formatted outputs
+
+
+
+``` {r create.tables}
+tmp_for_table <- TeachingRatings %>% dplyr::select(c(eval, beauty, age))
+#Dump the correlation into a separate doc. Annoyingly, APATables won't output using kable
+apa.cor.table(tmp_for_table, filename = "homework 3 table 1.doc", table.number = 1, show.conf.interval = FALSE)
+
+apa_lm <- apa_print(mod)
+apa_lm$table['SE'] <- sum.mod$coefficients[,2]
+apa_table(
+  apa_lm$table,
+  caption = "Linear regression: Effect of Instructor Physical Attractiveness and Age on Course Evaluation"
+)
+```

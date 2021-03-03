@@ -104,7 +104,7 @@ summary(mod)
 
 ```
 
-The adjusted R^2^ suggests that 17.4% of the variance in salary can be accounted for by years since PhD conferral. The estimate for the intercept, 91,718.70, suggests that if the regression line were drawn to cross the y-axis (in other words, someone had 0 years since their PhD was conferred), their salary would be, on average, \$91,718.70 (which seems a bit... optimistic). The slope is 985.30, suggesting that for every year following PhD conferral, one's salary increases by \$985.30 on average. The p-values are < 0.001, suggesting that the probability that these estimates reflect mere chance is very low. 
+The adjusted R^2^ suggests that 17.4% of the variance in salary can be explained by years since PhD conferral. The estimate for the intercept, 91,718.70, suggests that if the regression line were drawn to cross the y-axis (in other words, someone had 0 years since their PhD was conferred), their salary would be, on average, \$91,718.70 (which seems a bit... optimistic). The slope is 985.30, suggesting that for every year following PhD conferral, one's salary increases by \$985.30 on average. The p-values are < 0.001, suggesting that the probability that these estimates reflect mere chance is very low. 
 
 
 
